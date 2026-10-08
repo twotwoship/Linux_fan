@@ -45,6 +45,15 @@
 | LCD | signal | 98 | SDA |
 | piezo buzzer | signal | 33 | + |
 | piezo buzzer | GND | 39 | - |
+| BMP180| signal | 3 | SDA |
+| BMP180| signal | 5 | SCL |
+| LED BAR| signal | 8 | LED1 |
+| LED BAR| signal | 10 | LED2 |
+| LED BAR| signal | 35 | LED3 |
+| LED BAR| signal | 38 | LED4 |
+| LED BAR| signal | 19 | LED5 |
+| LED BAR| signal | 21 | LED6 |
+| LED BAR| signal | 23 | LED7 |
 
 ## 주요 기능
 
