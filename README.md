@@ -54,18 +54,6 @@
 | LED BAR| GPIO | 19 | LED5 |
 | LED BAR| GPIO | 21 | LED6 |
 | LED BAR| GPIO | 23 | LED7 |
-| FND | signal | 7 | GPIO |
-| FND | signal | 11 | GPIO |
-| FND | signal | 12 | GPIO |
-| FND | signal | 13 | GPIO |
-| FND | signal | 15 | GPIO |
-| FND | signal | 16 | GPIO |
-| FND | signal | 18 | GPIO |
-| motor | signal | 29 | GPIO |
-| motor | signal | 31 | GPIO |
-| motor | signal | 32 | PWM |
-| FND | signal | 37 | GPIO |
-| FND | signal | 40 | GPIO |
 | FND | GPIO | 7 | FND A |
 | FND | GPIO | 11 | FND B|
 | FND | GPIO | 12 | FND C |
