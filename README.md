@@ -41,8 +41,11 @@
 
 | 장치 | 신호 | Jetson Orin Nano  핀 | 모듈 물리 핀 |
 | --- | --- | --- | --- |
-| LCD | signal | 99 | SCL |
-| LCD | signal | 98 | SDA |
+| LCD | I2C | 27 | SDA |
+| LCD | I2C | 28 | SCL |
+| Rotary Enconder | GPIO | 24 | KEY |
+| Rotary Enconder | GPIO | 26 | S2 |
+| Rotary Enconder | GPIO | 33 | S1 |
 | piezo buzzer | signal | 33 | + |
 | piezo buzzer | GND | 39 | - |
 | BMP180| I2C | 3 | SDA |
