@@ -45,15 +45,15 @@
 | LCD | signal | 98 | SDA |
 | piezo buzzer | signal | 33 | + |
 | piezo buzzer | GND | 39 | - |
-| BMP180| signal | 3 | SDA |
-| BMP180| signal | 5 | SCL |
-| LED BAR| signal | 8 | LED1 |
-| LED BAR| signal | 10 | LED2 |
-| LED BAR| signal | 35 | LED3 |
-| LED BAR| signal | 38 | LED4 |
-| LED BAR| signal | 19 | LED5 |
-| LED BAR| signal | 21 | LED6 |
-| LED BAR| signal | 23 | LED7 |
+| BMP180| I2C | 3 | SDA |
+| BMP180| I2C | 5 | SCL |
+| LED BAR| GPIO | 8 | LED1 |
+| LED BAR| GPIO | 10 | LED2 |
+| LED BAR| GPIO | 35 | LED3 |
+| LED BAR| GPIO | 38 | LED4 |
+| LED BAR| GPIO | 19 | LED5 |
+| LED BAR| GPIO | 21 | LED6 |
+| LED BAR| GPIO | 23 | LED7 |
 | FND | signal | 7 | GPIO |
 | FND | signal | 11 | GPIO |
 | FND | signal | 12 | GPIO |
