@@ -114,14 +114,15 @@
 - 규칙
 - 
 
-
 ## Git 및 PR 관리
 
 ### Commit 규칙
-- 메시지는 `영역: 변경 내용` 형식으로 작성합니다.
+
+- 메시지는 `목적:영역: 변경 내용` 형식으로 작성합니다.
 
 ```bash
-git commit -m "lcd: read 함수 추가"
-git commit -m "fnd: 제어 함수 추가"
-git commit -m "app: 로직 수정"
+git commit -m "add:lcd: read 함수 추가"
+git commit -m "add:fnd: 제어 함수 추가"
+git commit -m "rev:app: 로직 수정"
+git commit -m "rem:app: 앱 제거"
 ```
