@@ -66,6 +66,18 @@
 | motor | signal | 32 | PWM |
 | FND | signal | 37 | GPIO |
 | FND | signal | 40 | GPIO |
+| FND | GPIO | 7 | FND A |
+| FND | GPIO | 11 | FND B|
+| FND | GPIO | 12 | FND C |
+| FND | GPIO | 13 | FND D |
+| FND | GPIO | 15 | FND E |
+| FND | GPIO | 16 | FND F|
+| FND | GPIO | 18 | FND G |
+| motor | GPIO | 29 | IN1 |
+| motor | GPIO | 31 | IN2 |
+| motor | PWM | 32 | PWM |
+| FND | GPIO | 37 | DIG3 |
+| FND | GPIO | 40 | DIG4 |
 
 
 ## 주요 기능
