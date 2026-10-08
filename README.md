@@ -54,6 +54,19 @@
 | LED BAR| signal | 19 | LED5 |
 | LED BAR| signal | 21 | LED6 |
 | LED BAR| signal | 23 | LED7 |
+| FND | signal | 7 | GPIO |
+| FND | signal | 11 | GPIO |
+| FND | signal | 12 | GPIO |
+| FND | signal | 13 | GPIO |
+| FND | signal | 15 | GPIO |
+| FND | signal | 16 | GPIO |
+| FND | signal | 18 | GPIO |
+| motor | signal | 29 | GPIO |
+| motor | signal | 31 | GPIO |
+| motor | signal | 32 | PWM |
+| FND | signal | 37 | GPIO |
+| FND | signal | 40 | GPIO |
+
 
 ## 주요 기능
 
