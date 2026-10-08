@@ -45,6 +45,19 @@
 | LCD | signal | 98 | SDA |
 | piezo buzzer | signal | 33 | + |
 | piezo buzzer | GND | 39 | - |
+| FND | signal | 7 | GPIO |
+| FND | signal | 11 | GPIO |
+| FND | signal | 12 | GPIO |
+| FND | signal | 13 | GPIO |
+| FND | signal | 15 | GPIO |
+| FND | signal | 16 | GPIO |
+| FND | signal | 18 | GPIO |
+| motor | signal | 29 | GPIO |
+| motor | signal | 31 | GPIO |
+| motor | signal | 32 | PWM |
+| FND | signal | 37 | GPIO |
+| FND | signal | 40 | GPIO |
+
 
 ## 주요 기능
 
