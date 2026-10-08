@@ -1,5 +1,6 @@
 # Linux_fan
 
+# 매우 아주 아주 아주 아주 중요 항상 푸쉬하기전에 풀하기
 ## Contributors
 
 | 이름 | GitHub | 담당 |
