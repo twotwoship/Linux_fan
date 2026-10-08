@@ -43,6 +43,8 @@
 | --- | --- | --- | --- |
 | LCD | signal | 99 | SCL |
 | LCD | signal | 98 | SDA |
+| piezo buzzer | signal | 33 | + |
+| piezo buzzer | GND | 39 | - |
 
 ## 주요 기능
 
@@ -59,6 +61,7 @@
 - read()
 - write()
 - ioctl()
+
 
 ### LED Driver
 
