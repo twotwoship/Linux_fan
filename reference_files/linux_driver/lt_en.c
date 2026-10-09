@@ -159,6 +159,12 @@ static irqreturn_t key_isr(int irq, void *dev_id){
 }
 
 static irqreturn_t s_isr(int irq, void *dev_id){
+    /*
+    INIT 00 / S1 S2
+     CW    01    11    10    00
+    CCW    10    11    01    00
+    */
+
     
     return IRQ_HANDLED;
 }
