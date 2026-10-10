@@ -21,7 +21,7 @@ static unsigned int device_minor_start = 0;
 static unsigned int device_minor_count = 1;
 
 #define GPIO_KEY_PHY_BASE  0x022114C0  // PZ.06, BOARD 24
-#define GPIO_S1_PHY_BASE   0x02214200  // PH.00, BOARD 33
+#define GPIO_S1_PHY_BASE   0x02211220  // PY.01, BOARD 22
 #define GPIO_S2_PHY_BASE   0x022114E0  // PZ.07, BOARD 26
 #define GPIO_PHY_SIZE		0x20
 
@@ -35,7 +35,7 @@ static volatile unsigned long gpio_s2_base;
 
 // legacy GPIO 번호 = 348 + line offset
 #define GPIO_KEY  484   //136	PZ.06
-#define GPIO_S1   391   //43	PH.00
+#define GPIO_S1   471   //123   PY.01
 #define GPIO_S2   485   //137	PZ.07
 
 /* 디바운싱용 */
@@ -62,8 +62,7 @@ static int rotary_count = 0;
 
 KEY          24            ───────→     136
 S2           26            ───────→     137
-S1           33            ───────→      43
-
+S1           22            ───────→     123
 일단 디바이스 인있해야됨.
 
 그리고 내가 lcd에 쓸 버퍼가 있어야 겠고
@@ -85,7 +84,7 @@ static void gpio_init(void){
     value &= ~(0x1 << 1);     // input
     iowrite32(value, (void *)(gpio_key_base + GPIO_ENABLE_CONFIG));
 
-    /* S1 : PH.00 input */
+    /* S1 : PY.01 input, BOARD 22 */
     value = ioread32((void *)(gpio_s1_base + GPIO_OUTPUT_CONTROL));
     value |= (0x1 << 0);
     iowrite32(value, (void *)(gpio_s1_base + GPIO_OUTPUT_CONTROL));
