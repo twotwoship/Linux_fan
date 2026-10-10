@@ -45,7 +45,7 @@
 | LCD | I2C | 28 | SCL |
 | Rotary Enconder | GPIO | 24 | KEY |
 | Rotary Enconder | GPIO | 26 | S2 |
-| Rotary Enconder | GPIO | 33 | S1 |
+| Rotary Enconder | GPIO | 22 | S1 |
 | piezo buzzer | signal | 33 | + |
 | piezo buzzer | GND | 39 | - |
 | BMP180| I2C | 3 | SDA |
