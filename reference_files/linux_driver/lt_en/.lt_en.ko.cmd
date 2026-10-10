@@ -1,0 +1,1 @@
+cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.ko := ld -r -EL  -maarch64elf -z noexecstack --build-id=sha1  -T scripts/module.lds -o /home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.ko /home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.o /home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.mod.o;  true

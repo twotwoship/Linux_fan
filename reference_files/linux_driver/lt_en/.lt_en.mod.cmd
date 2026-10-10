@@ -1,0 +1,1 @@
+cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.mod := printf '%s\n'   lt_en.o | awk '!x[$$0]++ { print("/home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/"$$0) }' > /home/aidl/work/Linux_fan/reference_files/linux_driver/lt_en/lt_en.mod
