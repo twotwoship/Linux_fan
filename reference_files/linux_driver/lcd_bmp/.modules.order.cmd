@@ -1,0 +1,1 @@
+cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/modules.order := {   echo /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/bmp180.ko;   echo /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/lcd_t.ko; :; } | awk '!x[$$0]++' - > /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/modules.order

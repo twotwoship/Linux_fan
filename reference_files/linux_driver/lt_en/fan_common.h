@@ -28,6 +28,6 @@ int bmp180_get_data(struct bmp180_data *out);
 #define _CW 1
 #define _CCW 2
 
-int _cw_ccw_event(int event);
+int _cw_ccw_event(void);
 
 #endif /* FAN_COMMON_H */
