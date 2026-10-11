@@ -13,6 +13,9 @@
 #include <linux/poll.h>
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
+#include <linux/kfifo.h>
+#include <linux/spinlock.h>
+#include "fan_common.h"
 
 static dev_t devt;              // 주+부 번호 합친 값
 static struct cdev *lt_en_cdev;    // 문자 디바이스 객체 주소
@@ -54,6 +57,11 @@ static int irq_s2;
 // cw ccw 구분용
 static unsigned char prev_s = 0;
 static int rotary_count = 0;
+
+#define _CW_CCW_FIFO_SIZE 64
+
+static DEFINE_KFIFO(_cw_ccw_fifo, unsigned char, _CW_CCW_FIFO_SIZE);
+static DEFINE_SPINLOCK(_cw_ccw_lock);
 
 /*
 필요한 게 있나?
@@ -201,6 +209,7 @@ static irqreturn_t s_isr(int irq, void *dev_id){
     int s2;
     unsigned char curr_s;
     unsigned char tran_s;
+    unsigned char event;
 
     /*
     INIT 00 / S1 S2
@@ -218,16 +227,35 @@ static irqreturn_t s_isr(int irq, void *dev_id){
     
     if(rotary_count >= 4){
         /* cw */
+        event = _CW;
         printk("CW\n");
+        if(kfifo_in_spinlocked(&_cw_ccw_fifo, &event, 1, &_cw_ccw_lock) != 1){
+            printk("fifo fullll\n");
+        }
         rotary_count = 0;
     }else if(rotary_count <= -4){
         /* ccw */
+        event = _CCW;
          printk("CCW\n");
+         if(kfifo_in_spinlocked(&_cw_ccw_fifo, &event, 1, &_cw_ccw_lock) != 1){
+            printk("fifo fullll\n");
+        }
+         
         rotary_count = 0;
     }
 
     return IRQ_HANDLED;
 }
+
+/*fnd는 이것만 가져다 쓰면됨 cw1 ccw2*/
+int _cw_ccw_event(void){
+    unsigned char event;
+        if(kfifo_out_spinlocked(&_cw_ccw_fifo, &event, 1, &_cw_ccw_lock) != 1){
+            return 0;
+        }
+    return event;
+}
+EXPORT_SYMBOL_GPL(_cw_ccw_event);
 
 static int __init lt_en_init(void){
     int ret;
