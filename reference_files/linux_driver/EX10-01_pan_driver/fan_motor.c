@@ -13,6 +13,9 @@
 #include <linux/mutex.h>
 #include <linux/slab.h>
 #include <linux/string.h>
+#include <linux/workqueue.h>
+
+#include "fan_common.h"
 
 #include "fan_motor.h"
 
@@ -55,6 +58,7 @@ struct fan_device {
     struct device *device;
 
     struct mutex lock;
+    struct delayed_work auto_work;
 
     __u32 mode;
     __u32 duty;
@@ -126,6 +130,52 @@ static int fan_apply_duty(struct fan_device *fan,
     pr_info("fan_motor: duty=%u%%\n", duty);
 
     return 0;
+}
+
+/* BMP180 provides temperature in 0.1 C units (258 = 25.8 C). */
+static __u32 fan_temp_to_duty(int temp_x10)
+{
+    if (temp_x10 < 258)
+        return 70;
+    if (temp_x10 < 265)
+        return 80;
+    if (temp_x10 < 273)
+        return 90;
+    return 100;
+}
+
+/* Runs in workqueue context; does not issue a fresh I2C measurement. */
+static void fan_auto_work(struct work_struct *work)
+{
+    struct fan_device *fan = container_of(
+        to_delayed_work(work), struct fan_device, auto_work);
+    struct bmp180_data data;
+    __u32 duty;
+    int ret;
+
+    mutex_lock(&fan->lock);
+
+    if (fan->mode != FAN_AUTO)
+        goto out;
+
+    ret = bmp180_get_data(&data);
+    if (ret) {
+        pr_warn_ratelimited("fan_motor: BMP180 read failed (%d)\n", ret);
+        /* Fail safe when there is no valid sensor sample. */
+        if (fan->duty)
+            fan_apply_duty(fan, 0);
+    } else {
+        duty = fan_temp_to_duty(data.temp_x10);
+        if (duty != fan->duty) {
+            ret = fan_apply_duty(fan, duty);
+            if (ret)
+                pr_err_ratelimited("fan_motor: PWM error (%d)\n", ret);
+        }
+    }
+
+    schedule_delayed_work(&fan->auto_work, HZ);
+out:
+    mutex_unlock(&fan->lock);
 }
 
 /* ---------------------------------------
@@ -212,6 +262,12 @@ static ssize_t fan_write(struct file *file,
     mutex_lock(&fan->lock);
 
     ret = fan_set_mode(fan, mode);
+    if (!ret) {
+        if (mode == FAN_AUTO)
+            mod_delayed_work(system_wq, &fan->auto_work, 0);
+        else
+            cancel_delayed_work(&fan->auto_work);
+    }
 
     mutex_unlock(&fan->lock);
 
@@ -339,6 +395,7 @@ static int fan_probe(struct platform_device *pdev)
         return -ENOMEM;
 
     mutex_init(&fan->lock);
+    INIT_DELAYED_WORK(&fan->auto_work, fan_auto_work);
 
     /*
      * IN1 GPIO 요청
@@ -468,6 +525,8 @@ static int fan_remove(struct platform_device *pdev)
     struct fan_device *fan;
 
     fan = platform_get_drvdata(pdev);
+
+    cancel_delayed_work_sync(&fan->auto_work);
 
     mutex_lock(&fan->lock);
 
