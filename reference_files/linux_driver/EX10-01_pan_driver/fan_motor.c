@@ -127,6 +127,21 @@ static int fan_apply_duty(struct fan_device *fan,
 
     fan->duty = duty;
 
+    /* Optional kernel-to-kernel LED BAR update; motor works without LED. */
+    {
+        int (*led_update)(unsigned int);
+        int led_ret;
+
+        led_update = symbol_get(led_set_duty);
+        if (led_update) {
+            led_ret = led_update(duty);
+            symbol_put(led_set_duty);
+            if (led_ret)
+                pr_warn_ratelimited("fan_motor: LED update failed (%d)\n",
+                                    led_ret);
+        }
+    }
+
     pr_info("fan_motor: duty=%u%%\n", duty);
 
     return 0;

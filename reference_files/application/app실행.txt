@@ -1,0 +1,34 @@
+#insmod 모듈 로드는 부저와 FND 순으로 호출해야 함
+# 온도와 LED 서비스를 먼저 준비
+sudo insmod ./bmp180.ko
+sudo insmod ./led_b.ko
+
+# FND가 호출할 부저를 먼저 준비
+sudo insmod ./buzz_t.ko pwm_id=2
+
+# 로터리가 호출할 FND를 준비
+sudo insmod ./timer_f.ko
+
+# 로터리 로드
+sudo insmod ./lt_en.ko
+
+# 센서를 사용하는 모터 로드
+sudo insmod ./mt_d.ko pwm_id=3 gpio_in1=453 gpio_in2=454
+
+# LCD 로드
+sudo insmod ./lcd_t.ko
+
+#####현재 코드처럼 번호를 동적으로 할당하는 드라이버: insmod → 번호 확인 → mknod 순서로 진행
+
+##mknod
+ls -l /dev/lt_en /dev/buzz_t /dev/mt_d /dev/timer_f ....로 major,minor 번호 알아서 mknod하기
+sudo mknod /dev/lt_en c 240 0 .....로 하기
+
+#삭제 
+sudo rmmod lcd_t
+sudo rmmod mt_d
+sudo rmmod lt_en
+sudo rmmod timer_f
+sudo rmmod buzz_t
+sudo rmmod led_b
+sudo rmmod bmp180
