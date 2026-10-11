@@ -264,7 +264,7 @@ static int __init buzzer_init(void)
     INIT_WORK(&buzzer_work, buzzer_play_worker);
 
     //문자 장치 번호 할당 자동
-    ret = alloc_chrdev_region(&devt, 0, 1, "buzzer_t");
+    ret = alloc_chrdev_region(&devt, 0, 1, "buzz_t");
 
     if (ret)
         return ret;
