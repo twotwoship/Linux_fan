@@ -23,4 +23,6 @@ struct bmp180_data {
 #define BMP180_IOC_MAGIC  'B'
 #define BMP180_IOC_READ   _IOR(BMP180_IOC_MAGIC, 1, struct bmp180_data)
 
+int bmp180_get_data(struct bmp180_data *out);
+
 #endif /* FAN_COMMON_H */
