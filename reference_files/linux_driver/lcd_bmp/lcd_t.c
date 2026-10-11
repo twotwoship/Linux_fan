@@ -13,24 +13,14 @@
 #define LCD_EN  0x04    // 데이터 입력 타이밍 제어어어잇!
 #define LCD_BL  0x08    // 뺴꾸라이트
 
+
+
 // 디바이스 객체
 static struct i2c_client *lcd_client;
 
 // 온도 워크 큐
 static struct delayed_work pressure_work;
 
-static void pressure_work_func(struct work_struct *work){
-	// 온도 대기압 값.
-	struct bmp180_data b_data;
-	int ret = 0;
-	bmp180_get_data(&b_data);
-	if(ret == 0){
-        printk("temp = %d, pressure = %d\n",
-                b_data.temp_x10,
-                b_data.pressure_pa);
-    }
-    schedule_delayed_work(&pressure_work, msecs_to_jiffies(1000));
-}
 
 static int pcf8574_write(u8 data){
 /* i2c 1 byte 전송 */
@@ -138,6 +128,34 @@ static ssize_t lcd_write(struct file *file, const char __user *buf, size_t count
 	return len;
 }
 
+static void pressure_work_func(struct work_struct *work){
+	// 온도 대기압 값.
+	struct bmp180_data b_data;
+	char buf[17];
+	int len;
+	int i;
+	int ret = bmp180_get_data(&b_data);
+
+	if(ret == 0){
+        printk("temp = %d, pressure = %d\n",
+                b_data.temp_x10,
+                b_data.pressure_pa);
+		/*첫줄*/
+		lcd_cmd(0x80);
+		len = snprintf(buf, sizeof(buf), "T : %d.%d C", b_data.temp_x10 / 10, b_data.temp_x10 % 10);
+
+		for(i = 0; i < len; i++){
+			lcd_data(buf[i]);
+		}
+		/*뚜쨰쭈*/
+		lcd_cmd(0xC0);
+		len = snprintf(buf, sizeof(buf), "P : %d.%02d hPa", b_data.pressure_pa / 100, b_data.pressure_pa % 100);
+		for(i = 0; i < len; i++){
+			lcd_data(buf[i]);
+		}
+    }
+    schedule_delayed_work(&pressure_work, msecs_to_jiffies(1000));
+}
 
 static const struct file_operations lcd_fops = {
 	.owner = THIS_MODULE,
