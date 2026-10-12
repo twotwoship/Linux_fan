@@ -7,11 +7,10 @@
 enum fan_mode {
     FAN_OFF    = 0,
     FAN_AUTO   = 1,
-    FAN_FINE   = 2,
-    FAN_LOW    = 3,
-    FAN_MEDIUM = 4,
-    FAN_HIGH   = 5
-    
+    FAN_FINE   = 2,  /* 미풍 */
+    FAN_LOW    = 3,  /* 약풍 */
+    FAN_MEDIUM = 4,  /* 중풍 */
+    FAN_HIGH   = 5   /* 강풍 */
 };
 
 struct fan_status {

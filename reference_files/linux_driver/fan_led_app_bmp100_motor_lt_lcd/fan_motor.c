@@ -151,12 +151,12 @@ static int fan_apply_duty(struct fan_device *fan,
 static __u32 fan_temp_to_duty(int temp_x10)
 {
     if (temp_x10 < 258)
-        return 40;
+        return FAN_SPEED_BREEZE; /* 미풍 65% */
     if (temp_x10 < 265)
-        return 60;
+        return FAN_SPEED_WEAK;   /* 약풍 75% */
     if (temp_x10 < 273)
-        return 80;
-    return 100;
+        return FAN_SPEED_MID;    /* 중풍 85% */
+    return FAN_SPEED_STRONG;     /* 강풍 95% */
 }
 
 /* Runs in workqueue context; does not issue a fresh I2C measurement. */
@@ -227,19 +227,31 @@ static int fan_set_mode(struct fan_device *fan,
         duty = 0;
         break;
 
+    case FAN_FINE:
+        duty = FAN_SPEED_BREEZE;
+        break;
+
     case FAN_LOW:
+<<<<<<< HEAD:reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd/fan_motor.c
         duty = 60;
+=======
+        duty = FAN_SPEED_WEAK;
+>>>>>>> 32e2c38 (merge: solve merge problem):reference_files/linux_driver/fan_led_app_bmp100_motor_lt/fan_motor.c
         break;
 
     case FAN_MEDIUM:
-        duty = 80;
+        duty = FAN_SPEED_MID;
         break;
 
     case FAN_HIGH:
+<<<<<<< HEAD:reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd/fan_motor.c
         duty = 100;
         break;
 
   
+=======
+        duty = FAN_SPEED_STRONG;
+>>>>>>> 32e2c38 (merge: solve merge problem):reference_files/linux_driver/fan_led_app_bmp100_motor_lt/fan_motor.c
         break;
 
     default:

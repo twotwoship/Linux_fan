@@ -45,10 +45,10 @@ static int motor_send_mode(int fd, enum fan_mode mode)
     return 0;
 }
 
-/* OFF -> AUTO -> LOW -> MEDIUM -> HIGH -> FINE -> OFF */
+/* OFF -> AUTO -> FINE(미풍) -> LOW(약풍) -> MEDIUM(중풍) -> HIGH(강풍) -> OFF */
 static enum fan_mode next_mode(enum fan_mode current)
 {
-    if (current == FAN_FINE)
+    if (current == FAN_HIGH)
         return FAN_OFF;
     return (enum fan_mode)(current + 1);
 }
@@ -69,6 +69,19 @@ static int buzzer_play(int fd){
     }
 
     return 0;
+}
+
+static const char *mode_name(enum fan_mode mode)
+{
+    switch (mode) {
+    case FAN_OFF:    return "OFF";
+    case FAN_AUTO:   return "AUTO";
+    case FAN_FINE:   return "미풍";
+    case FAN_LOW:    return "약풍";
+    case FAN_MEDIUM: return "중풍";
+    case FAN_HIGH:   return "강풍";
+    default:         return "UNKNOWN";
+    }
 }
 
 int main(int argc, char **argv)
@@ -142,7 +155,7 @@ int main(int argc, char **argv)
         goto cleanup;
     }
 
-    printf("mode=%d (OFF) | KEY: mode change, CW/CCW: timer +/-1 min\n",
+    printf("mode=%d (OFF) | KEY: OFF->AUTO->미풍->약풍->중풍->강풍; CW/CCW: timer +/-1 min\n",
            (int)mode);
 
     button.fd = rotary_fd;
@@ -222,11 +235,12 @@ int main(int argc, char **argv)
             }
 
             mode = next;
-            printf("mode=%d%s\n", (int)mode,
+            printf("mode=%d (%s)%s\n", (int)mode, mode_name(mode),
                    mode == FAN_AUTO ? " (FND OFF)" : "");
         }
 
-        if (mode >= FAN_LOW && mode <= FAN_FINE) {
+        /* 2..5: all manual modes; old LOW..FINE range was always false. */
+        if (mode >= FAN_FINE && mode <= FAN_HIGH) {
             __u32 timer_signal;
             __u32 remaining_sec;
             ssize_t received;
