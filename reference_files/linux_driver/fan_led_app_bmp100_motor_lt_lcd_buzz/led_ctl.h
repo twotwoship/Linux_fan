@@ -9,13 +9,14 @@
  */
 
 #include <linux/ioctl.h>
+#include "fan_common.h"
 
-/* ---- 모터가 쓰는 duty 값 (미풍 40 / 약풍 60 / 중풍 80 / 강풍 100) ---- */
-#define LED_DUTY_OFF     0
-#define LED_DUTY_BREEZE  70     /* 미풍 */
-#define LED_DUTY_WEAK    80     /* 약풍 */
-#define LED_DUTY_MID     90     /* 중풍 */
-#define LED_DUTY_STRONG  100    /* 강풍 */
+/* 모터와 같은 PWM duty를 사용한다 (미풍 65 / 약풍 75 / 중풍 85 / 강풍 95). */
+#define LED_DUTY_OFF     FAN_SPEED_OFF
+#define LED_DUTY_BREEZE  FAN_SPEED_BREEZE
+#define LED_DUTY_WEAK    FAN_SPEED_WEAK
+#define LED_DUTY_MID     FAN_SPEED_MID
+#define LED_DUTY_STRONG  FAN_SPEED_STRONG
 
 /* ---- LED BAR ioctl: int duty 값 하나를 넘김 ---- */
 #define LED_IOC_MAGIC      'L'
