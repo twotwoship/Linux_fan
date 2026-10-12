@@ -5,7 +5,7 @@
  *  - led_b_dev.ko(장치)를 먼저 올려야 probe가 호출된다. 이름이 "led_bar"로 같아야 match.
  *  - LED 7개를 하위(LED1)부터 켠다. duty 값 -> 켤 개수는 duty_to_count()에서 정한다.
  *  - 값을 받는 경로 (둘 다 led_set_duty()로 모인다)
- *      (1) 모터 드라이버가 led_set_duty(duty)를 직접 호출 (모터의 실제 PWM duty: 0/40/60/80/100)
+ *      (1) 모터 드라이버가 led_set_duty(duty)를 직접 호출 (모터의 실제 PWM duty: 0/65/75/85/95)
  *      (2) /dev/led_bar 의 ioctl(LED_IOC_SET_LEVEL) : 테스트/APP용 (같은 duty 값)
  *  - 모터는 symbol_get()으로 이 함수를 찾아 쓴다. led_b.ko가 안 올라가 있으면 모터는 LED 없이 동작한다.
  *    모터가 호출하는 시점에 올라가 있어야 반영되므로, 모터보다 먼저 올리는 것을 권장.
@@ -39,7 +39,7 @@ static int cur_count;                 /* 지금 켜져 있는 칸 수 (led_lock 
 
 /*
  * 모터가 쓰는 duty 값 -> 켤 LED 개수.
- * 팀 확정: 미풍(40) 1 / 약풍(60) 3 / 중풍(80) 5 / 강풍(100) 7개.
+ * 팀 확정: 미풍(65) 1 / 약풍(75) 3 / 중풍(85) 5 / 강풍(95) 7개.
  * 값 의미나 개수가 바뀌면 여기만 고치면 됨.
  */
 static int duty_to_count(unsigned int duty)
