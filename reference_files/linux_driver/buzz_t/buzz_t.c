@@ -62,10 +62,12 @@ static int buzzer_set_tone(unsigned int hz)
 }
 
 // PWM 출력 중지 
-static void buzzer_silence(void)
+static int buzzer_silence(void)
 {
     struct pwm_state state;
     int ret;
+
+    pwm_get_state(buzzer_pwm, &state);
 
     /*
      * 초기 PWM 상태의 period가 0인 경우
