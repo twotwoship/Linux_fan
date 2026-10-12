@@ -27,8 +27,11 @@ def function(path, name):
 
 def test_mapping(folder):
     source = '\n'.join([
-        '#include <assert.h>\n#include <errno.h>\ntypedef unsigned int __u32;',
+        '#include <assert.h>\n#include <errno.h>\n#include <stdbool.h>\n#include <stddef.h>\n'
+        'typedef unsigned int __u32;\n'
+        '#define pr_info(...) ((void)0)\n#define pr_warn_ratelimited(...) ((void)0)',
         header('fan_common.h'), header('fan_motor.h'), header('led_ctl.h'),
+        header('led_b.h'),
         'struct fan_device { __u32 mode, duty; };',
         'static int fan_apply_duty(struct fan_device *fan, __u32 duty) '
         '{ fan->duty = duty; return 0; }',
@@ -36,11 +39,43 @@ def test_mapping(folder):
         function(folder / 'fan_motor.c', 'fan_temp_to_duty'),
         function(folder / 'fan_app.c', 'next_mode'),
         function(BUILD / 'led_b.c', 'duty_to_count'),
-        'static int target_count, led_lock, anim_work;',
+        'static int target_count, cur_count, led_lock, anim_work;\n'
+        'struct work_struct { int unused; };\n'
+        'static struct led_bar_pdata pdata = {{0,1,2,3,4,5,6}, 0};\n'
+        'static struct led_bar_pdata *pd = &pdata;\n'
+        'static int gpio_output[LED_NUM];\n'
+        'static void gpio_set_value(int gpio, int value) { gpio_output[gpio] = value; }\n'
+        '#define ANIM_STEP_MS 80\n#define msecs_to_jiffies(ms) (ms)',
         '#define mutex_lock(lock) ((void)(lock))\n'
         '#define mutex_unlock(lock) ((void)(lock))\n'
         '#define schedule_delayed_work(work, delay) ((void)(work), (void)(delay))',
         function(BUILD / 'led_b.c', 'led_set_duty'),
+        function(BUILD / 'led_b.c', 'led_apply'),
+        function(BUILD / 'led_b.c', 'anim_fn'),
+        'typedef int irqreturn_t;\n#define IRQ_HANDLED 1\n#define DEBOUNCE_TIME_MS 20\n'
+        '#define GPIO_INPUT 8\n#define atomic_inc(p) (++*(p))\n'
+        '#define wake_up_interruptible(p) ((void)(p))\n#define printk(...) ((void)0)\n'
+        'static int key_work, key_event_count, key_wait_queue, key_level = 1;\n'
+        'static unsigned long gpio_key_base;\nstatic bool key_pressed;\n'
+        'static long now_ms, key_due_ms = -1;\nstatic void *system_wq;\n'
+        'static unsigned int ioread32(void *address) { (void)address; return key_level; }\n'
+        'static void mod_delayed_work(void *queue, int *work, int delay) {\n'
+        '    (void)queue; (void)work; key_due_ms = now_ms + delay;\n}',
+        function(folder / 'lt_en.c', 'key_debounce_work'),
+        function(folder / 'lt_en.c', 'key_isr'),
+        '''static void advance_time(long time) {
+            if (key_due_ms >= 0 && key_due_ms <= time) {
+                now_ms = key_due_ms;
+                key_due_ms = -1;
+                key_debounce_work(NULL);
+            }
+            now_ms = time;
+        }
+        static void key_edge(long time, int level) {
+            advance_time(time);
+            key_level = level;
+            key_isr(0, NULL);
+        }''',
         '''int main(void) {
             struct fan_device fan = {0};
             enum fan_mode mode = FAN_OFF;
@@ -72,6 +107,39 @@ def test_mapping(folder):
                     assert(duty_to_count(duty) == -EINVAL);
             }
             assert(duty_to_count((unsigned int)-1) == -EINVAL);
+            /* Check every LED transition and both output polarities. */
+            for (int polarity = 0; polarity <= 1; polarity++) {
+                pd->active_low = polarity;
+                for (int from = 0; from < 6; from++) {
+                    for (int to = 0; to < 6; to++) {
+                        cur_count = expected_leds[from];
+                        assert(led_set_duty(expected_duty[to]) == 0);
+                        for (int step = 0; step < LED_NUM; step++) anim_fn(NULL);
+                        assert(cur_count == expected_leds[to]);
+                        for (int pin = 0; pin < LED_NUM; pin++)
+                            assert(gpio_output[pin] == ((pin < cur_count) ^ polarity));
+                    }
+                }
+            }
+            /* One press from AUTO, including press and release bounce. */
+            key_edge(100, 0); key_edge(102, 1); key_edge(104, 0);
+            advance_time(124);
+            assert(key_event_count == 1);
+            key_edge(500, 1); key_edge(502, 0); key_edge(504, 1);
+            advance_time(524);
+            assert(key_event_count == 1);
+            mode = FAN_AUTO;
+            for (int event = 0; event < key_event_count; event++) mode = next_mode(mode);
+            assert(mode == FAN_FINE);
+            assert(fan_set_mode(&fan, mode) == 0);
+            assert(led_set_duty(fan.duty) == 0);
+            assert(target_count == 1);
+            /* A real second press still works; a short glitch does not. */
+            key_edge(600, 0); advance_time(620);
+            assert(key_event_count == 2);
+            key_edge(700, 1); advance_time(720);
+            key_edge(800, 0); key_edge(805, 1); advance_time(825);
+            assert(key_event_count == 2);
             return 0;
         }''',
     ])
@@ -80,10 +148,10 @@ def test_mapping(folder):
         test = Path(directory) / 'led_mapping.c'
         binary = Path(directory) / 'led_mapping'
         test.write_text(source)
-        subprocess.run(['cc', '-std=c11', '-Wall', '-Wextra', '-Werror',
+        subprocess.run(['cc', '-std=c11', '-Wall', '-Wextra', '-Werror', '-Wno-unused-parameter',
                         str(test), '-o', str(binary)], check=True)
         subprocess.run([str(binary)], check=True)
-    print(f'PASS {folder.name}: button cycle, manual/AUTO LED mapping, OFF, invalid duties')
+    print(f'PASS {folder.name}: button debounce/cycle, manual/AUTO LED mapping, GPIO output, OFF, invalid duties')
 
 
 if __name__ == '__main__':
