@@ -81,6 +81,9 @@ static void anim_fn(struct work_struct *work)
 		cur_count--;
 	led_apply(cur_count);
 	done = (cur_count == target_count);
+	if (done)
+		pr_info("led_bar: output complete count=%d active_low=%d\n",
+			cur_count, pd->active_low);
 	mutex_unlock(&led_lock);
 
 	if (!done)
@@ -99,11 +102,14 @@ int led_set_duty(unsigned int duty)
 {
 	int count = duty_to_count(duty);
 
-	if (count < 0)
+	if (count < 0) {
+		pr_warn_ratelimited("led_bar: rejected duty=%u, LED state unchanged\n", duty);
 		return count;
+	}
 
 	mutex_lock(&led_lock);
 	target_count = count;
+	pr_info("led_bar: duty=%u target=%d\n", duty, target_count);
 	mutex_unlock(&led_lock);
 
 	schedule_delayed_work(&anim_work, 0);

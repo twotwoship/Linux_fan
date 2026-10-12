@@ -251,6 +251,7 @@ static int fan_set_mode(struct fan_device *fan,
         return ret;
 
     fan->mode = mode;
+    pr_info("fan_motor: mode=%u duty=%u%%\n", fan->mode, fan->duty);
 
     return 0;
 }

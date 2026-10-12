@@ -48,6 +48,8 @@ modules:
 $(APPS): %: %.c
 	$(CC) -Wall -Wextra -o $@ $<
 
+$(APPS): $(wildcard *.h)
+
 
 # ==========================================
 # Clean

@@ -15,6 +15,7 @@
 #include <linux/interrupt.h>
 #include <linux/kfifo.h>
 #include <linux/spinlock.h>
+#include <linux/workqueue.h>
 #include "fan_common.h"
 
 static dev_t devt;              // 주+부 번호 합친 값
@@ -43,7 +44,8 @@ static volatile unsigned long gpio_s2_base;
 
 /* 디바운싱용 */
 #define DEBOUNCE_TIME_MS 20
-static unsigned long last_interrupt_time;
+static struct delayed_work key_work;
+static bool key_pressed;
 
 /* 사용자에서 key 인터럽트를 위한 큐*/
 static DECLARE_WAIT_QUEUE_HEAD(key_wait_queue);
@@ -182,14 +184,23 @@ static const struct file_operations lt_en_fops = {
     //.unlocked_ioctl = 
 };
 
-irqreturn_t key_isr(int irq, void *dev_id){
-    unsigned long current_time = jiffies;
-    if(time_after(current_time, last_interrupt_time + msecs_to_jiffies(DEBOUNCE_TIME_MS))){
+static void key_debounce_work(struct work_struct *work)
+{
+    bool pressed = !(ioread32((void *)(gpio_key_base + GPIO_INPUT)) & 0x1);
+
+    /* A stable release must precede the next press. */
+    if (pressed && !key_pressed) {
         atomic_inc(&key_event_count);
-        last_interrupt_time = current_time;
         wake_up_interruptible(&key_wait_queue);
         printk("KEY\n");
     }
+    key_pressed = pressed;
+}
+
+irqreturn_t key_isr(int irq, void *dev_id)
+{
+    mod_delayed_work(system_wq, &key_work,
+                     msecs_to_jiffies(DEBOUNCE_TIME_MS));
     return IRQ_HANDLED;
 }
 
@@ -299,9 +310,11 @@ static int __init lt_en_init(void){
     }
 
     gpio_init();
+    key_pressed = !(ioread32((void *)(gpio_key_base + GPIO_INPUT)) & 0x1);
+    INIT_DELAYED_WORK(&key_work, key_debounce_work);
 
     irq_key = gpio_to_irq(GPIO_KEY);
-    if(request_irq(irq_key, key_isr, IRQF_TRIGGER_FALLING, "key_irq", NULL)){
+    if(request_irq(irq_key, key_isr, IRQF_TRIGGER_FALLING | IRQF_TRIGGER_RISING, "key_irq", NULL)){
         printk("lt_en : IRQ %d noooooooooooooooooo\n", irq_key);
         ret = -EIO;
         goto err5;
@@ -330,6 +343,7 @@ err7:
 err6:
     free_irq(irq_key, NULL);
 err5:
+    cancel_delayed_work_sync(&key_work);
     iounmap((void *)gpio_s2_base);
 err4:
     iounmap((void *)gpio_s1_base);
@@ -350,6 +364,7 @@ static void __exit lt_en_exit(void)
     free_irq(irq_key,NULL);
     free_irq(irq_s1,NULL);
     free_irq(irq_s2,NULL);
+    cancel_delayed_work_sync(&key_work);
 
     iounmap(gpio_s1_base);
     iounmap(gpio_s2_base);
