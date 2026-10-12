@@ -45,7 +45,7 @@ static int motor_send_mode(int fd, enum fan_mode mode)
     return 0;
 }
 
-/* OFF -> AUTO -> LOW -> MEDIUM -> HIGH -> FINE -> OFF */
+/* OFF -> AUTO -> FINE -> LOW -> MEDIUM -> HIGH -> OFF */
 static enum fan_mode next_mode(enum fan_mode current)
 {
     if (current == FAN_HIGH)

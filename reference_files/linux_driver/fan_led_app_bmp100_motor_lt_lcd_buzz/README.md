@@ -12,6 +12,13 @@
 make clean
 make
 ```
+
+LED duty는 `led_ctl.h`에서 `fan_common.h`의 모터 상수를 공유합니다.
+미풍/약풍/중풍/강풍은 65/75/85/95%이고 LED는 각각 1/3/5/7개 켜집니다.
+매핑 검증은 `python3 ../fan_led_app_bmp100_motor_lt_lcd/test_led_mapping.py`로 실행합니다.
+기존 모듈이 로드되어 있다면 앱을 종료하고 `sudo rmmod fan_motor led_b led_b_dev`로
+내린 뒤 새로 빌드한 LED 장치 → LED 드라이버 → 모터 순서로 다시 로드하세요.
+
 sudo dmesg -w
 ---
 
