@@ -1,0 +1,1 @@
+cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd_buzz/lcd_t.mod := printf '%s\n'   lcd_t.o | awk '!x[$$0]++ { print("/home/aidl/work/Linux_fan/reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd_buzz/"$$0) }' > /home/aidl/work/Linux_fan/reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd_buzz/lcd_t.mod

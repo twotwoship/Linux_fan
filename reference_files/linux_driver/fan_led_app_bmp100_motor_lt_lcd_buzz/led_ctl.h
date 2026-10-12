@@ -12,6 +12,7 @@
 
 /* ---- 모터가 쓰는 duty 값 (미풍 40 / 약풍 60 / 중풍 80 / 강풍 100) ---- */
 #define LED_DUTY_OFF     0
+//#define LED_DUTY_BREEZE  60     /* 미풍 */
 #define LED_DUTY_BREEZE  70     /* 미풍 */
 #define LED_DUTY_WEAK    80     /* 약풍 */
 #define LED_DUTY_MID     90     /* 중풍 */
