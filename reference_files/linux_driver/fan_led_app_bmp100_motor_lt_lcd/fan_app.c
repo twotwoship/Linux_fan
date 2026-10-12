@@ -226,7 +226,7 @@ int main(int argc, char **argv)
                    mode == FAN_AUTO ? " (FND OFF)" : "");
         }
 
-        if (mode >= FAN_LOW && mode <= FAN_FINE) {
+        if (mode >= FAN_FINE && mode <= FAN_HIGH) {
             __u32 timer_signal;
             __u32 remaining_sec;
             ssize_t received;

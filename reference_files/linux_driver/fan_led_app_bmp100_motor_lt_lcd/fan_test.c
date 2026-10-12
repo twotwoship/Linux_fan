@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
     value = strtoul(argv[1], &end, 10);
 
     if (errno != 0 || end == argv[1] ||
-        *end != '\0' || value > FAN_FINE) {
+        *end != '\0' || value > FAN_HIGH) {
         printf("Invalid mode\n");
         return 1;
     }
