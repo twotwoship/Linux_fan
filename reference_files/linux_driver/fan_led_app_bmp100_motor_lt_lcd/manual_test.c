@@ -31,7 +31,7 @@ static int write_u32(int fd, uint32_t value)
 
 static uint32_t next_manual_mode(uint32_t mode)
 {
-    return mode == FAN_FINE ? FAN_LOW : mode + 1;
+    return mode == FAN_HIGH ? FAN_FINE : mode + 1;
 }
 
 int main(int argc, char *argv[])
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     int result = EXIT_FAILURE;
 
     if (argc != 2 || sscanf(argv[1], "%u", &mode) != 1 ||
-        mode < FAN_LOW || mode > FAN_FINE) {
+        mode < FAN_FINE || mode > FAN_HIGH) {
         fprintf(stderr, "Usage: %s <manual motor mode 2~5>\n", argv[0]);
         return EXIT_FAILURE;
     }

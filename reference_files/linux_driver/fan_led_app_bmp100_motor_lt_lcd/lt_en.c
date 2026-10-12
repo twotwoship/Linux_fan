@@ -351,10 +351,10 @@ static void __exit lt_en_exit(void)
     free_irq(irq_s1,NULL);
     free_irq(irq_s2,NULL);
 
-    iounmap(gpio_s1_base);
-    iounmap(gpio_s2_base);
-    iounmap(gpio_key_base);
-    
+    iounmap((void *)gpio_s1_base);
+    iounmap((void *)gpio_s2_base);
+    iounmap((void *)gpio_key_base);
+
     cdev_del(lt_en_cdev);
     unregister_chrdev_region(devt, 1);
 }

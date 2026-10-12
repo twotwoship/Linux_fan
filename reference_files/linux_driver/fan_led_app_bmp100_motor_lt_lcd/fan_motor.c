@@ -219,10 +219,6 @@ static int fan_set_mode(struct fan_device *fan,
 
     switch (mode) {
     case FAN_OFF:
-
-    case FAN_FINE:
-        duty = 40;
-
     case FAN_AUTO:
         duty = 0;
         break;
@@ -232,11 +228,7 @@ static int fan_set_mode(struct fan_device *fan,
         break;
 
     case FAN_LOW:
-<<<<<<< HEAD:reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd/fan_motor.c
-        duty = 60;
-=======
         duty = FAN_SPEED_WEAK;
->>>>>>> 32e2c38 (merge: solve merge problem):reference_files/linux_driver/fan_led_app_bmp100_motor_lt/fan_motor.c
         break;
 
     case FAN_MEDIUM:
@@ -244,14 +236,7 @@ static int fan_set_mode(struct fan_device *fan,
         break;
 
     case FAN_HIGH:
-<<<<<<< HEAD:reference_files/linux_driver/fan_led_app_bmp100_motor_lt_lcd/fan_motor.c
-        duty = 100;
-        break;
-
-  
-=======
         duty = FAN_SPEED_STRONG;
->>>>>>> 32e2c38 (merge: solve merge problem):reference_files/linux_driver/fan_led_app_bmp100_motor_lt/fan_motor.c
         break;
 
     default:

@@ -150,7 +150,8 @@ static void bmp_poll_fn(struct work_struct *work)
 		pr_warn_ratelimited("bmp180: poll measure failed (%d)\n", ret);
 	}
 
-	printk("p_pa : %d, temp : %d", d.pressure_pa, d.temp_x10);
+	if (!ret)
+		printk("p_pa : %d, temp : %d\n", d.pressure_pa, d.temp_x10);
 	schedule_delayed_work(&poll_work, msecs_to_jiffies(POLL_MS));
 }
 
