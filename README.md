@@ -50,8 +50,7 @@ enviroment.md 참고
 | Rotary Enconder | GPIO | 24 | KEY |
 | Rotary Enconder | GPIO | 26 | S2 |
 | Rotary Enconder | GPIO | 22 | S1 |
-| piezo buzzer | signal | 33 | + |
-| piezo buzzer | GND | 39 | - |
+| piezo buzzer | PWM | 33 | + |
 | BMP180| I2C | 3 | SDA |
 | BMP180| I2C | 5 | SCL |
 | LED BAR| GPIO | 8 | LED1 |
