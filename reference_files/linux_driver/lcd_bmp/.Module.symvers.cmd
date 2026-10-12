@@ -1,1 +1,0 @@
-cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/Module.symvers := sed 's/\.ko$$/\.o/' /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/modules.order | scripts/mod/modpost -m   -o /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/Module.symvers -e -i Module.symvers   -T -

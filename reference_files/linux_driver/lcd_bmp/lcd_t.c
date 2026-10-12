@@ -207,7 +207,7 @@ static int lcd_remove(struct i2c_client *client){
     return 0;
 }
 
-// i2c 장치 매칭
+// i2c 장치 매칭 손으로 매칭시켜줄때쓰는거
 static const struct i2c_device_id lcd_id[] = {
 	{ "lcd_t", 0 },
 	{ }
@@ -215,9 +215,9 @@ static const struct i2c_device_id lcd_id[] = {
 
 MODULE_DEVICE_TABLE(i2c, lcd_id);
 
-// dt만들면 적용될거
+// dt만들면 적용될거 
 static const struct of_device_id lcd_of_match[] = {
-	{ .compatible = "mycompany, lcd_t" },
+	{ .compatible = "mycompany,lcd_t" },
 	{ }
 };
 

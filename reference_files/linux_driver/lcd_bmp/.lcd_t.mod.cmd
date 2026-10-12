@@ -1,1 +1,0 @@
-cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/lcd_t.mod := printf '%s\n'   lcd_t.o | awk '!x[$$0]++ { print("/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/"$$0) }' > /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/lcd_t.mod

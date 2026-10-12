@@ -1,1 +1,0 @@
-cmd_/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/bmp180.mod := printf '%s\n'   bmp180.o | awk '!x[$$0]++ { print("/home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/"$$0) }' > /home/aidl/work/Linux_fan/reference_files/linux_driver/lcd_bmp/bmp180.mod

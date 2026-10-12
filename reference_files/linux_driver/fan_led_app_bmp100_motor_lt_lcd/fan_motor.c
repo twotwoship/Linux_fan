@@ -151,11 +151,11 @@ static int fan_apply_duty(struct fan_device *fan,
 static __u32 fan_temp_to_duty(int temp_x10)
 {
     if (temp_x10 < 258)
-        return 70;
+        return 40;
     if (temp_x10 < 265)
-        return 80;
+        return 60;
     if (temp_x10 < 273)
-        return 90;
+        return 80;
     return 100;
 }
 
@@ -219,12 +219,16 @@ static int fan_set_mode(struct fan_device *fan,
 
     switch (mode) {
     case FAN_OFF:
+
+    case FAN_FINE:
+        duty = 40;
+
     case FAN_AUTO:
         duty = 0;
         break;
 
     case FAN_LOW:
-        duty = 70;
+        duty = 60;
         break;
 
     case FAN_MEDIUM:
@@ -232,11 +236,10 @@ static int fan_set_mode(struct fan_device *fan,
         break;
 
     case FAN_HIGH:
-        duty = 90;
+        duty = 100;
         break;
 
-    case FAN_FINE:
-        duty = 100;
+  
         break;
 
     default:
