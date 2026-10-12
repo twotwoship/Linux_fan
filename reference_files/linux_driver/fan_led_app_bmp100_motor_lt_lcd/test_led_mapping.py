@@ -32,9 +32,9 @@ def test_mapping(folder):
         '#define pr_info(...) ((void)0)\n#define pr_warn_ratelimited(...) ((void)0)',
         header('fan_common.h'), header('fan_motor.h'), header('led_ctl.h'),
         header('led_b.h'),
-        'struct fan_device { __u32 mode, duty; };',
-        'static int fan_apply_duty(struct fan_device *fan, __u32 duty) '
-        '{ fan->duty = duty; return 0; }',
+        'struct pwm_device { int unused; };\n'
+        'struct fan_device { struct pwm_device *pwm; __u32 mode, duty; };',
+        'static int fan_apply_duty(struct fan_device *fan, __u32 duty);',
         function(folder / 'fan_motor.c', 'fan_set_mode'),
         function(folder / 'fan_motor.c', 'fan_temp_to_duty'),
         function(folder / 'fan_app.c', 'next_mode'),
@@ -52,6 +52,16 @@ def test_mapping(folder):
         function(BUILD / 'led_b.c', 'led_set_duty'),
         function(BUILD / 'led_b.c', 'led_apply'),
         function(BUILD / 'led_b.c', 'anim_fn'),
+        'struct pwm_state { unsigned long long period, duty_cycle; int polarity; bool enabled; };\n'
+        'static struct pwm_state applied_pwm;\nstatic int pwm_error;\n'
+        '#define PWM_PERIOD_NS 50000ULL\n#define PWM_POLARITY_NORMAL 0\n'
+        'static void pwm_get_state(struct pwm_device *pwm, struct pwm_state *state) '
+        '{ (void)pwm; *state = applied_pwm; }\n'
+        'static int pwm_apply_state(struct pwm_device *pwm, const struct pwm_state *state) '
+        '{ (void)pwm; if (!pwm_error) applied_pwm = *state; return pwm_error; }\n'
+        'static void fan_direction_forward(void) {}\nstatic void fan_direction_stop(void) {}\n'
+        '#define symbol_get(symbol) (symbol)\n#define symbol_put(symbol) ((void)0)',
+        function(folder / 'fan_motor.c', 'fan_apply_duty'),
         'typedef int irqreturn_t;\n#define IRQ_HANDLED 1\n#define DEBOUNCE_TIME_MS 20\n'
         '#define GPIO_INPUT 8\n#define atomic_inc(p) (++*(p))\n'
         '#define wake_up_interruptible(p) ((void)(p))\n#define printk(...) ((void)0)\n'
@@ -88,12 +98,13 @@ def test_mapping(folder):
             assert(led_set_duty(70) == -EINVAL);
             assert(target_count == 3);
             assert(fan_set_mode(&fan, FAN_FINE) == 0);
-            assert(led_set_duty(fan.duty) == 0);
             assert(target_count == 1);
             for (int i = 0; i < 6; i++) {
                 assert(mode == (enum fan_mode)i);
                 assert(fan_set_mode(&fan, mode) == 0);
                 assert(fan.duty == expected_duty[i]);
+                assert(applied_pwm.duty_cycle == PWM_PERIOD_NS * expected_duty[i] / 100);
+                assert(target_count == expected_leds[i]);
                 assert(duty_to_count(fan.duty) == expected_leds[i]);
                 mode = next_mode(mode);
                 assert(duty_to_count(fan_temp_to_duty(temperatures[i])) == auto_leds[i]);
@@ -113,7 +124,7 @@ def test_mapping(folder):
                 for (int from = 0; from < 6; from++) {
                     for (int to = 0; to < 6; to++) {
                         cur_count = expected_leds[from];
-                        assert(led_set_duty(expected_duty[to]) == 0);
+                        assert(fan_set_mode(&fan, to) == 0);
                         for (int step = 0; step < LED_NUM; step++) anim_fn(NULL);
                         assert(cur_count == expected_leds[to]);
                         for (int pin = 0; pin < LED_NUM; pin++)
@@ -121,6 +132,20 @@ def test_mapping(folder):
                     }
                 }
             }
+            /* AUTO temperature changes and the following manual mode use the same real path. */
+            for (int i = 0; i < 6; i++) {
+                assert(fan_set_mode(&fan, FAN_AUTO) == 0);
+                assert(fan_apply_duty(&fan, fan_temp_to_duty(temperatures[i])) == 0);
+                assert(target_count == auto_leds[i]);
+                assert(fan_set_mode(&fan, FAN_FINE) == 0);
+                assert(target_count == 1);
+                for (int step = 0; step < LED_NUM; step++) anim_fn(NULL);
+                assert(cur_count == 1);
+            }
+            pwm_error = -EIO;
+            assert(fan_set_mode(&fan, FAN_LOW) == -EIO);
+            assert(fan.mode == FAN_FINE && fan.duty == 65 && target_count == 1);
+            pwm_error = 0;
             /* One press from AUTO, including press and release bounce. */
             key_edge(100, 0); key_edge(102, 1); key_edge(104, 0);
             advance_time(124);
@@ -132,7 +157,6 @@ def test_mapping(folder):
             for (int event = 0; event < key_event_count; event++) mode = next_mode(mode);
             assert(mode == FAN_FINE);
             assert(fan_set_mode(&fan, mode) == 0);
-            assert(led_set_duty(fan.duty) == 0);
             assert(target_count == 1);
             /* A real second press still works; a short glitch does not. */
             key_edge(600, 0); advance_time(620);
