@@ -16,17 +16,17 @@ APP_CFLAGS ?= -std=c11 -Wall -Wextra -O2
 .PHONY: all modules clean
 
 # 부저 모듈과 테스트 프로그램 빌드
-all: modules buzzer_t
+all: modules buzz_t
 
 modules:
 	$(MAKE) -C "$(KDIR)" M="$(MODULE_DIR)" modules
 
 # buzzer_test.c → 실행 파일 buzzer_t
-buzzer_t: buzzer_test.c
+buzz_t: buzz_t_test.c
 	$(APP_CC) $(APP_CFLAGS) -o $@ $<
 
 clean:
 	$(MAKE) -C "$(KDIR)" M="$(MODULE_DIR)" clean
-	$(RM) buzzer_t
+	$(RM) buzz_t
 
 endif

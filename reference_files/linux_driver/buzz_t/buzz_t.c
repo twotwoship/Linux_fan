@@ -67,8 +67,8 @@ static int buzzer_silence(void)
     struct pwm_state state;
     int ret;
 
-    pwm_get_state(buzzer_pwm, &state);
-
+    pwm_get_state(buzzer_pwm, &state); 
+    
     /*
      * 초기 PWM 상태의 period가 0인 경우
      * 유효한 주기를 먼저 설정한다.
