@@ -16,6 +16,7 @@
 #define MOTOR_DEVICE "/dev/fan_motor"
 #define ENCODER_DEVICE "/dev/lt_en"
 #define FND_DEVICE "/dev/fnd"
+#define BUZZ_DEVICE "/dev/buzz_t"
 
 static volatile sig_atomic_t stopping = 0;
 
@@ -52,6 +53,24 @@ static enum fan_mode next_mode(enum fan_mode current)
     return (enum fan_mode)(current + 1);
 }
 
+static int buzzer_play(int fd){
+    int value = 1;
+    ssize_t written;
+
+    do{
+        written = write(fd,&value,sizeof(value));
+    }while (written < 0 && errno == EINTR);
+
+    if(written < 0) return -1;
+
+    if(written != sizeof(value)){
+        errno = EIO;
+        return -1;
+    }
+
+    return 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *motor_path = MOTOR_DEVICE;
@@ -61,6 +80,7 @@ int main(int argc, char **argv)
     int rotary_fd = -1;
     int motor_fd = -1;
     int fnd_fd = -1;
+    int buzz_fd = -1;
     int status = EXIT_SUCCESS;
 
     if (argc > 2) {
@@ -98,6 +118,13 @@ int main(int argc, char **argv)
     fnd_fd = open(FND_DEVICE, O_RDWR | O_CLOEXEC);
     if (fnd_fd < 0) {
         perror("open /dev/fnd");
+        status = EXIT_FAILURE;
+        goto cleanup;
+    }
+
+    buzz_fd = open(BUZZ_DEVICE, O_WRONLY | O_CLOEXEC);
+    if (buzz_fd < 0) {
+        perror("open /dev/buzz_t");
         status = EXIT_FAILURE;
         goto cleanup;
     }
@@ -214,14 +241,26 @@ int main(int argc, char **argv)
             }
 
             if (timer_signal == FND_TIMER_EXPIRED) {
-                if (motor_send_mode(motor_fd, FAN_OFF) < 0 ||
-                    ioctl(fnd_fd, FND_IOC_RESET) < 0) {
-                    perror("timer expiration handling");
+                if (motor_send_mode(motor_fd, FAN_OFF) < 0){
+                    perror("motor OFF");
                     status = EXIT_FAILURE;
                     break;
                 }
+
                 mode = FAN_OFF;
-                printf("FND timer expired -> motor OFF (mode=0)\n");
+
+                if(ioctl(fnd_fd, FND_IOC_RESET) < 0) {
+                    perror("FND RESET");
+                    status = EXIT_FAILURE;
+                    break;
+                }
+                if(buzzer_play(buzz_fd) <0){
+                    perror("buzzer play");
+                    status = EXIT_FAILURE;
+                    break;
+                }
+            
+                printf("FND timer expired -> motor OFF, Buzzer ON(mode=0)\n");
                 continue;
             }
 
@@ -261,6 +300,9 @@ cleanup:
     }
     if (rotary_fd >= 0)
         close(rotary_fd);
+
+    if (buzz_fd >= 0)
+        close(buzz_fd);
 
     return status;
 }
