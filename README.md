@@ -70,7 +70,7 @@ enviroment.md 참고
 | FND | GPIO | 18 | FND G |
 | motor | GPIO | 29 | IN1 |
 | motor | GPIO | 31 | IN2 |
-| motor | PWM | 32 | PWM |
+| motor | PWM | 32 | EnableA |
 | FND | GPIO | 37 | DIG3 |
 | FND | GPIO | 40 | DIG4 |
 
