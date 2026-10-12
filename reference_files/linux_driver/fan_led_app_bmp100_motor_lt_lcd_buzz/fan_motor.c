@@ -223,7 +223,7 @@ static int fan_set_mode(struct fan_device *fan,
         break;
 
     case FAN_FINE:
-        duty = 70;
+        duty = FAN_SPEED_BREEZE;
         break;
 
     case FAN_AUTO:
@@ -231,15 +231,15 @@ static int fan_set_mode(struct fan_device *fan,
         break;
 
     case FAN_LOW:
-        duty = 80;
+        duty = FAN_SPEED_WEAK;
         break;
 
     case FAN_MEDIUM:
-        duty = 90;
+        duty = FAN_SPEED_MID;
         break;
 
     case FAN_HIGH:
-        duty = 100;
+        duty = FAN_SPEED_STRONG;
         break;
 
     default:
