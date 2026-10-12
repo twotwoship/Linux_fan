@@ -9,28 +9,14 @@
 #include <linux/gpio.h>
 #include <linux/workqueue.h>
 #include <linux/mutex.h>
+#include <linux/atomic.h>
 #include <linux/slab.h>
 #include <linux/jiffies.h>
-
-//#include "fnd_driver.h"
+#include "fnd_driver.h"
 
 #define DEVICE_NAME "fnd"
 #define FND_GPIO_COUNT 9
 #define REFRESH_MS 4
-
-#define FND_DRIVER_H
-
-#include <linux/ioctl.h>
-#include <linux/types.h>
-
-#define FND_IOC_MAGIC 'F'
-
-#define FND_IOC_START _IO(FND_IOC_MAGIC, 1)
-#define FND_IOC_STOP  _IO(FND_IOC_MAGIC, 2)
-#define FND_IOC_RESET _IO(FND_IOC_MAGIC, 3)
-
-/* 남은 초 조회: __u32 * */
-#define FND_IOC_GET_REMAINING _IOR(FND_IOC_MAGIC, 4, __u32)
 
 /* read()가 앱에 전달하는 타이머 신호 */
 #define FND_TIMER_RUNNING 0
@@ -40,7 +26,6 @@
 static int gpios[FND_GPIO_COUNT] = {
     492, 460, 398, 470, 433, 474, 473, 472, 399
 };
-
 static int gpio_count = FND_GPIO_COUNT;
 module_param_array(gpios, int, &gpio_count, 0444);
 
@@ -59,6 +44,7 @@ struct fnd_device {
     struct delayed_work refresh_work;
     struct delayed_work timer_work;
     struct mutex lock;
+    atomic_t rotation_steps;
 
     u32 remaining_sec;
     unsigned long deadline;
@@ -69,6 +55,7 @@ struct fnd_device {
 };
 
 static struct platform_device *fnd_pdev;
+static struct fnd_device *fnd_active;
 
 /* ---------- GPIO 출력 ---------- */
 
@@ -171,13 +158,31 @@ static void fnd_timer_tick(struct work_struct *work)
         );
 
     bool just_expired = false;
+    int rotation_steps;
 
     mutex_lock(&fnd->lock);
+
+    rotation_steps = atomic_xchg(&fnd->rotation_steps, 0);
 
     if (fnd->running) {
         fnd_update_timer(fnd);
 
+        /* Running-state rotations were rejected by the previous interface. */
+
         just_expired = fnd->expired;
+    } else if (rotation_steps > 0) {
+        if (rotation_steps >= DIV_ROUND_UP(
+                99 * 60 - fnd->remaining_sec, 60))
+            fnd->remaining_sec = 99 * 60;
+        else
+            fnd->remaining_sec += rotation_steps * 60;
+        fnd->expired = false;
+    } else if (rotation_steps < 0) {
+        if (rotation_steps < -(int)(fnd->remaining_sec / 60))
+            fnd->remaining_sec = 0;
+        else
+            fnd->remaining_sec += rotation_steps * 60;
+        fnd->expired = false;
     }
 
     mutex_unlock(&fnd->lock);
@@ -388,6 +393,7 @@ static int fnd_probe(struct platform_device *pdev)
         return -ENOMEM;
 
     mutex_init(&fnd->lock);
+    atomic_set(&fnd->rotation_steps, 0);
 
     for (i = 0; i < FND_GPIO_COUNT; i++) {
         int initial = (i < 7) ?
@@ -428,6 +434,7 @@ static int fnd_probe(struct platform_device *pdev)
         return ret;
 
     platform_set_drvdata(pdev, fnd);
+    fnd_active = fnd;
 
     schedule_delayed_work(
         &fnd->refresh_work, 0
@@ -447,6 +454,7 @@ static int fnd_remove(struct platform_device *pdev)
     struct fnd_device *fnd =
         platform_get_drvdata(pdev);
 
+    fnd_active = NULL;
     misc_deregister(&fnd->misc);
 
     cancel_delayed_work_sync(
@@ -518,6 +526,27 @@ static void __exit fnd_exit(void)
 
     pr_info("fnd: module unloaded\n");
 }
+int fnd_notify_rotation(enum encoder_rotation rotation)
+{
+    struct fnd_device *fnd = fnd_active;
+
+    if (!fnd)
+        return -ENODEV;
+
+    switch (rotation) {
+    case CW:
+        atomic_inc(&fnd->rotation_steps);
+        break;
+    case CCW:
+        atomic_dec(&fnd->rotation_steps);
+        break;
+    default:
+        return -EINVAL;
+    }
+
+    return 0;
+}
+EXPORT_SYMBOL_GPL(fnd_notify_rotation);
 
 module_init(fnd_init);
 module_exit(fnd_exit);
